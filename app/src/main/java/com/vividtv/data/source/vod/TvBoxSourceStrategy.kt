@@ -6,6 +6,8 @@ import com.vividtv.data.model.MediaSourceType
 import com.vividtv.data.model.RowType
 import com.vividtv.data.model.StreamResult
 import com.vividtv.data.source.SourceStrategy
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.net.URL
@@ -13,140 +15,152 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * TVBox 标准 JSON 点播接口适配器
- * 对接 ffzy 资源站格式：http://cj.ffzyapi.com/api.php/provide/vod
+ * 多 TVBox 源聚合器 — 同时对接多个资源站
+ * 可用于获取大量电影和电视剧数据
  */
 @Singleton
 class TvBoxSourceStrategy @Inject constructor() : SourceStrategy {
 
-    override val sourceId: String = "tvbox_ffzy"
-    private val baseUrl = "http://cj.ffzyapi.com/api.php/provide/vod"
-    private val json = Json { ignoreUnknownKeys = true }
+    override val sourceId: String = "tvbox_aggregator"
+
+    private val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
+
+    /** 多个 TVBox 标准资源站 */
+    private val sourceApis = listOf(
+        TvBoxSource("ffzy", "http://cj.ffzyapi.com/api.php/provide/vod"),
+        TvBoxSource("1080zy", "https://api.1080zyapi.com/api.php/provide/vod"),
+        TvBoxSource("80sjsc", "http://cj.80sjsc.com/api.php/provide/vod"),
+        // 以下为可选源，按需取消注释
+        // TvBoxSource("tianyi", "https://api.tianyi.com/api.php/provide/vod"),
+        // TvBoxSource("xunlei", "http://cj.xunleicdn.com/api.php/provide/vod"),
+    )
+
+    private val categoryMap = mapOf(
+        1 to "电影", 2 to "电视剧", 3 to "综艺", 4 to "动漫",
+        5 to "纪录片", 6 to "少儿", 7 to "动作片", 8 to "喜剧片",
+        9 to "爱情片", 10 to "科幻片", 11 to "恐怖片", 12 to "剧情片",
+        13 to "战争片", 14 to "国产剧", 15 to "港台剧", 16 to "日韩剧",
+        17 to "欧美剧", 18 to "海外剧",
+    )
 
     override fun getSourceType(): MediaSourceType = MediaSourceType.VOD
 
     override suspend fun fetchHomeRows(): Result<List<MediaRow>> = runCatching {
-        // 分类列表
-        val categories = fetchCategories()
-        val rows = mutableListOf<MediaRow>()
+        coroutineScope {
+            // 从多个源并行取数据
+            val deferred = sourceApis.map { source ->
+                async { fetchRowsFromSource(source) }
+            }
+            val allRows = deferred.flatMap { it.await() }
 
-        // 首页推荐
-        val latest = fetchByType(1, 12) // 电影
-        if (latest.isNotEmpty()) {
-            rows.add(MediaRow("🎬 热门电影", latest, RowType.RECOMMENDED))
+            // 合并去重 + 按分类排列
+            val rows = mutableListOf<MediaRow>()
+            val seenTitles = mutableSetOf<String>()
+
+            // Banner 推荐（取第一个源的热门电影）
+            val banner = allRows.filter { it.title.contains("电影") }.flatMap { it.items }.take(8)
+            if (banner.isNotEmpty()) {
+                rows.add(MediaRow("__banner__", banner, RowType.RECOMMENDED))
+            }
+
+            // 分类行
+            listOf(
+                "电影" to "🎬 热门电影",
+                "电视剧" to "📺 热播电视剧",
+                "动漫" to "📽️ 动漫番剧",
+                "综艺" to "🎭 综艺娱乐",
+                "纪录片" to "🌍 纪录片",
+            ).forEach { (cat, label) ->
+                val items = allRows.flatMap { it.items }
+                    .filter { seenTitles.add(it.title) }
+                    .filter { it.category.contains(cat) || it.genres.any { g -> g.contains(cat) } }
+                    .take(18)
+                if (items.isNotEmpty()) {
+                    rows.add(MediaRow(label, items, if (cat == "电影") RowType.RECOMMENDED else RowType.LATEST))
+                }
+            }
+
+            // 如果分类行少于4行，补通用推荐
+            if (rows.size < 5) {
+                val extras = allRows.flatMap { it.items }.distinctBy { it.id }.take(20)
+                rows.add(MediaRow("🔥 大家都在看", extras.shuffled(), RowType.DEFAULT))
+            }
+
+            rows
         }
-
-        val series = fetchByType(2, 12) // 电视剧
-        if (series.isNotEmpty()) {
-            rows.add(MediaRow("📺 热门电视剧", series, RowType.LATEST))
-        }
-
-        val variety = fetchByType(3, 12) // 综艺
-        if (variety.isNotEmpty()) {
-            rows.add(MediaRow("🎭 综艺", variety))
-        }
-
-        val anime = fetchByType(4, 12) // 动漫
-        if (anime.isNotEmpty()) {
-            rows.add(MediaRow("📽️ 动漫", anime))
-        }
-
-        rows
     }
 
     override suspend fun search(query: String): Result<List<MediaItem>> = runCatching {
-        val url = "$baseUrl?ac=detail&wd=${java.net.URLEncoder.encode(query, "UTF-8")}"
-        val response = URL(url).readText()
-        val result = json.decodeFromString<TvBoxResponse>(response)
-        result.list.map { it.toMediaItem() }
+        coroutineScope {
+            val deferred = sourceApis.map { source ->
+                async {
+                    runCatching {
+                        val url = "${source.apiUrl}?ac=detail&wd=${java.net.URLEncoder.encode(query, "UTF-8")}"
+                        val response = URL(url).readText()
+                        val result = json.decodeFromString<TvBoxResponse>(response)
+                        result.list.map { it.toMediaItem() }
+                    }.getOrDefault(emptyList())
+                }
+            }
+            deferred.flatMap { it.await() }.distinctBy { it.id }.take(50)
+        }
     }
 
     override suspend fun resolveStream(mediaItem: MediaItem): Result<StreamResult> = runCatching {
-        // TVBox 源的播放地址已经包含在 streamUrls 中
         val url = mediaItem.streamUrls.values.firstOrNull() ?: mediaItem.id
-        StreamResult(
-            streamUrl = url,
-            isHls = url.contains(".m3u8"),
-            preferredQuality = "auto",
-        )
+        StreamResult(streamUrl = url, isHls = url.contains(".m3u8"), preferredQuality = "auto")
     }
 
     override suspend fun isAvailable(): Boolean = runCatching {
-        val response = URL("$baseUrl?ac=list").readText()
-        response.contains("\"code\":1")
+        sourceApis.any {
+            runCatching {
+                val r = URL("${it.apiUrl}?ac=list").readText()
+                r.contains("\"code\":1")
+            }.getOrDefault(false)
+        }
     }.getOrDefault(false)
 
-    private suspend fun fetchCategories(): List<TvBoxCategory> {
-        val response = URL("$baseUrl?ac=list").readText()
-        val result = json.decodeFromString<TvBoxResponse>(response)
-        return result.classes
+    private suspend fun fetchRowsFromSource(source: TvBoxSource): List<MediaRow> {
+        return runCatching {
+            val rows = mutableListOf<MediaRow>()
+            // 取电影 + 电视剧
+            for (typeId in listOf(1, 2, 3, 4)) {
+                val url = "${source.apiUrl}?ac=detail&t=$typeId&pg=1&pagesize=12"
+                val response = URL(url).readText()
+                val result = json.decodeFromString<TvBoxResponse>(response)
+                if (result.list.isNotEmpty()) {
+                    val items = result.list.map { it.toMediaItem() }
+                    val catName = categoryMap[typeId] ?: "影视"
+                    rows.add(MediaRow("[$source.name] $catName", items))
+                }
+            }
+            rows
+        }.getOrDefault(emptyList())
     }
 
-    private suspend fun fetchByType(typeId: Int, limit: Int): List<MediaItem> {
-        val url = "$baseUrl?ac=detail&t=$typeId&pg=1&pagesize=$limit"
-        val response = URL(url).readText()
-        val result = json.decodeFromString<TvBoxResponse>(response)
-        return result.list.map { it.toMediaItem() }
-    }
-
-    // ── TVBox JSON 响应格式 ──
+    data class TvBoxSource(val name: String, val apiUrl: String)
 
     @Serializable
     data class TvBoxResponse(
-        val code: Int = 0,
-        val msg: String = "",
-        val page: String = "1",
-        val total: Int = 0,
-        val limit: String = "20",
-        val list: List<TvBoxVod> = emptyList(),
-        val `class`: List<TvBoxCategory> = emptyList(),
-    )
-
-    @Serializable
-    data class TvBoxCategory(
-        val type_id: Int = 0,
-        val type_name: String = "",
-        val type_pid: Int = 0,
+        val code: Int = 0, val list: List<TvBoxVod> = emptyList(),
     )
 
     @Serializable
     data class TvBoxVod(
-        val vod_id: Long = 0,
-        val type_id: Int = 0,
-        val vod_name: String = "",
-        val vod_sub: String = "",
-        val vod_en: String = "",
-        val vod_status: Int = 0,
-        val vod_letter: String = "",
-        val vod_class: String = "",
-        val vod_pic: String = "",
-        val vod_actor: String = "",
-        val vod_director: String = "",
-        val vod_content: String = "",
-        val vod_play_url: String = "",
-        val vod_pic_thumb: String = "",
-        val vod_year: String = "",
-        val vod_score: String = "0",
-        val type_name: String = "",
-        val vod_remarks: String = "",
+        val vod_id: Long = 0, val vod_name: String = "", val type_id: Int = 0,
+        val vod_pic: String = "", val vod_actor: String = "", val vod_director: String = "",
+        val vod_content: String = "", val vod_play_url: String = "",
+        val vod_year: String = "", val vod_score: String = "0",
+        val type_name: String = "", val vod_class: String = "",
     ) {
         fun toMediaItem(): MediaItem {
-            val playUrl = vod_play_url
-                .split("#")
-                .firstOrNull()
-                ?.split("\$")
-                ?.getOrNull(1)
-                ?: ""
-
+            val playUrl = vod_play_url.split("#").firstOrNull()?.split("$")?.getOrNull(1) ?: ""
             return MediaItem(
-                id = vod_id.toString(),
-                title = vod_name,
+                id = "tvbox_$vod_id", title = vod_name,
                 description = vod_content.take(200),
-                posterUrl = vod_pic,
-                year = vod_year.toIntOrNull() ?: 0,
+                posterUrl = vod_pic, year = vod_year.toIntOrNull() ?: 0,
                 rating = vod_score.toFloatOrNull() ?: 0f,
-                category = type_name,
-                genres = vod_class.split(",").map { it.trim() }.filter { it.isNotEmpty() },
+                category = type_name, genres = vod_class.split(",").map { it.trim() }.filter { it.isNotEmpty() },
                 sourceType = MediaSourceType.VOD,
                 streamUrls = parsePlayUrls(vod_play_url),
             )
@@ -154,15 +168,12 @@ class TvBoxSourceStrategy @Inject constructor() : SourceStrategy {
     }
 
     companion object {
-        /** 解析 TVBox 播放地址格式 "集数\$url#集数\$url" */
         private fun parsePlayUrls(playUrl: String): Map<String, String> {
             if (playUrl.isBlank()) return emptyMap()
             val urls = mutableMapOf<String, String>()
-            playUrl.split("#").forEach { segment ->
-                val parts = segment.split("\$")
-                if (parts.size == 2) {
-                    urls[parts[0].trim()] = parts[1].trim()
-                }
+            playUrl.split("#").forEach { seg ->
+                val parts = seg.split("$")
+                if (parts.size == 2) urls[parts[0].trim()] = parts[1].trim()
             }
             return urls
         }

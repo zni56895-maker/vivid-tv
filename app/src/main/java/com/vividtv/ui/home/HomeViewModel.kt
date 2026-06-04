@@ -20,6 +20,7 @@ data class HomeUiState(
     val isLoading: Boolean = true,
     val rows: List<MediaRow> = emptyList(),
     val error: String? = null,
+    val selectedCategory: String? = null,
 )
 
 @HiltViewModel
@@ -31,6 +32,7 @@ class HomeViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+    private var allRows: List<MediaRow> = emptyList()
 
     init {
         loadHome()
@@ -52,18 +54,25 @@ class HomeViewModel @Inject constructor(
 
             mediaRepository.getHomeRows()
                 .onSuccess { rows ->
-                    _uiState.value = HomeUiState(
-                        isLoading = false,
-                        rows = rows,
-                    )
+                    allRows = rows
+                    _uiState.value = HomeUiState(isLoading = false, rows = rows)
                 }
                 .onFailure { throwable ->
                     _uiState.value = HomeUiState(
-                        isLoading = false,
-                        error = throwable.message ?: "加载失败",
+                        isLoading = false, error = throwable.message ?: "加载失败",
                     )
                 }
         }
+    }
+
+    fun selectCategory(category: String?) {
+        val filtered = if (category == null) allRows
+        else allRows.filter { row ->
+            row.items.any { it.category.contains(category) || it.genres.any { g -> g.contains(category) } }
+        }.ifEmpty {
+            allRows.take(3) // 保底
+        }
+        _uiState.value = _uiState.value.copy(selectedCategory = category, rows = filtered)
     }
 
     fun onMediaItemClicked(item: MediaItem) {
