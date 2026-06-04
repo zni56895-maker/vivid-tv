@@ -4,15 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.vividtv.ui.home.components.HomeContent
 import com.vividtv.ui.theme.VividColors
 import com.vividtv.ui.theme.VividTvTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,36 +27,20 @@ class HomeActivity : ComponentActivity() {
 }
 
 @Composable
-fun HomeScreen(
-    viewModel: HomeViewModel = hiltViewModel(),
-) {
+fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(VividColors.BackgroundDarkest)
+            .background(VividColors.BackgroundDarkest),
     ) {
-        // Top Navigation Bar
-        TopNavBar(
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+        HomeContent(
+            state = uiState,
+            onItemClick = { viewModel.onMediaItemClicked(it) },
+            onRetry = { viewModel.loadHome() },
+            onCategorySelected = { viewModel.selectCategory(it) },
+            selectedCategory = uiState.selectedCategory,
         )
-
-        // Main Content Grid
-        when {
-            uiState.isLoading -> LoadingState()
-            uiState.error != null -> ErrorState(
-                message = uiState.error!!,
-                onRetry = { viewModel.loadHome() },
-            )
-            uiState.rows.isEmpty() -> EmptyState()
-            else -> MediaContentGrid(
-                rows = uiState.rows,
-                onItemClick = { item ->
-                    viewModel.onMediaItemClicked(item)
-                },
-                modifier = Modifier.weight(1f),
-            )
-        }
     }
 }

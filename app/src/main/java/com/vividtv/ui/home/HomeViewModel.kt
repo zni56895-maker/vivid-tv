@@ -1,12 +1,13 @@
 package com.vividtv.ui.home
 
+import android.app.Application
 import android.content.Intent
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.vividtv.data.model.MediaItem
 import com.vividtv.data.model.MediaRow
 import com.vividtv.data.repository.MediaRepository
-import com.vividtv.ui.detail.DetailActivity
+import com.vividtv.data.updater.AppUpdater
 import com.vividtv.ui.player.PlayerActivity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,18 +20,32 @@ data class HomeUiState(
     val isLoading: Boolean = true,
     val rows: List<MediaRow> = emptyList(),
     val error: String? = null,
+    val selectedCategory: String? = null,
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    private val application: Application,
     private val mediaRepository: MediaRepository,
-) : ViewModel() {
+    private val appUpdater: AppUpdater,
+) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+    private var allRows: List<MediaRow> = emptyList()
 
     init {
         loadHome()
+        checkForUpdate()
+    }
+
+    private fun checkForUpdate() {
+        viewModelScope.launch {
+            val update = appUpdater.checkForUpdate()
+            if (update.hasUpdate) {
+                appUpdater.downloadUpdate(update.apkUrl)
+            }
+        }
     }
 
     fun loadHome() {
@@ -39,21 +54,37 @@ class HomeViewModel @Inject constructor(
 
             mediaRepository.getHomeRows()
                 .onSuccess { rows ->
-                    _uiState.value = HomeUiState(
-                        isLoading = false,
-                        rows = rows,
-                    )
+                    allRows = rows
+                    _uiState.value = HomeUiState(isLoading = false, rows = rows)
                 }
                 .onFailure { throwable ->
                     _uiState.value = HomeUiState(
-                        isLoading = false,
-                        error = throwable.message ?: "加载失败",
+                        isLoading = false, error = throwable.message ?: "加载失败",
                     )
                 }
         }
     }
 
+    fun selectCategory(category: String?) {
+        val filtered = if (category == null) allRows
+        else allRows.filter { row ->
+            row.items.any { it.category.contains(category) || it.genres.any { g -> g.contains(category) } }
+        }.ifEmpty {
+            allRows.take(3) // 保底
+        }
+        _uiState.value = _uiState.value.copy(selectedCategory = category, rows = filtered)
+    }
+
     fun onMediaItemClicked(item: MediaItem) {
-        // TODO: Navigate using context properly
+        val context = getApplication<Application>()
+        val streamUrl = item.streamUrls.values.firstOrNull() ?: return
+
+        val intent = Intent(context, PlayerActivity::class.java).apply {
+            putExtra("video_url", streamUrl)
+            putExtra("video_title", item.title)
+            putExtra("is_live", item.isLive)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
     }
 }

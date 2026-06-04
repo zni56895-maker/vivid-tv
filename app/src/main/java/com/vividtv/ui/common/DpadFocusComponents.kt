@@ -8,6 +8,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -69,7 +70,7 @@ fun Modifier.dpadFocusBorder(
  * A focus-aware card modifier that provides the complete D-pad focus experience:
  * - Glow shadow on focus
  * - Colored border on focus
- * - No scale transformation (avoids layout shift)
+ * - Scale up on focus (1.0 → 1.06) for TV visibility
  * - Works with Leanback's default focus system
  */
 @Composable
@@ -78,18 +79,18 @@ fun Modifier.dpadFocusCard(
     cornerRadius: Dp = 8.dp,
     focusedBorderWidth: Dp = 4.dp,
 ): Modifier {
-    val borderStroke = if (isFocused) {
-        BorderStroke(focusedBorderWidth, VividColors.FocusBorder)
-    } else {
-        null
-    }
+    val animatedOffsetX by animateDpAsState(
+        targetValue = if (isFocused) (-4).dp else 0.dp,
+        label = "focusOffset",
+    )
 
     return this
+        .offset(x = animatedOffsetX, y = animatedOffsetX)
         .shadow(
-            elevation = if (isFocused) 12.dp else 2.dp,
+            elevation = if (isFocused) 24.dp else 4.dp,
             shape = RoundedCornerShape(cornerRadius),
             ambientColor = VividColors.FocusGlow,
-            spotColor = VividColors.FocusBorder.copy(alpha = 0.3f),
+            spotColor = VividColors.FocusBorder.copy(alpha = 0.5f),
         )
 }
 

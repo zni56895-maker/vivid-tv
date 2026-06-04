@@ -1,22 +1,23 @@
 package com.vividtv.domain.player
 
 import android.content.Context
-import androidx.media3.common.C
-import androidx.media3.common.Format
-import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
+import androidx.media3.common.C
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.DefaultRenderersFactory
+import androidx.media3.common.MediaItem as Media3Item
+import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.DefaultRenderersFactory
+import androidx.media3.exoplayer.hls.HlsMediaSource
+import androidx.media3.exoplayer.dash.DashMediaSource
+import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
-import androidx.media3.exoplayer.source.hls.HlsMediaSource
-import androidx.media3.exoplayer.source.dash.DashMediaSource
+import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.trackselection.AdaptiveTrackSelection
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.trackselection.ExoTrackSelection
-import androidx.media3.common.MediaItem as Media3Item
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -90,7 +91,7 @@ class PlaybackManager @Inject constructor(
         val renderersFactory = DefaultRenderersFactory(context)
             .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER)
             // Force MediaCodec (hardware decoder) priority over software fallback
-            .setMediaCodecSelector(DefaultRenderersFactory.DEFAULT_MEDIA_CODEC_SELECTOR)
+            .setMediaCodecSelector(MediaCodecSelector.DEFAULT)
 
         // ── TrackSelector: adaptive bitrate with quality preference ──
         val trackSelectionFactory: ExoTrackSelection.Factory =
@@ -277,18 +278,18 @@ class PlaybackManager @Inject constructor(
     /** Build the appropriate MediaSource based on MIME type */
     private fun buildMediaSource(mediaItem: Media3Item, url: String): MediaSource {
         val mimeType = detectMimeType(url)
+        val dataSourceFactory = androidx.media3.datasource.DefaultHttpDataSource.Factory()
         return when {
             mimeType == MimeTypes.APPLICATION_M3U8 -> {
-                HlsMediaSource.Factory(DefaultRenderersFactory(context))
-                    .setAllowChunklessPreparation(true)
+                HlsMediaSource.Factory(dataSourceFactory)
                     .createMediaSource(mediaItem)
             }
             mimeType == MimeTypes.APPLICATION_MPD -> {
-                DashMediaSource.Factory(DefaultRenderersFactory(context))
+                DashMediaSource.Factory(dataSourceFactory)
                     .createMediaSource(mediaItem)
             }
             else -> {
-                ProgressiveMediaSource.Factory(DefaultRenderersFactory(context))
+                ProgressiveMediaSource.Factory(dataSourceFactory)
                     .createMediaSource(mediaItem)
             }
         }
@@ -335,15 +336,14 @@ class PlaybackManager @Inject constructor(
             )
         }
 
-        override fun onPlayerError(error: PlaybackException) {
+        override fun onPlayerErrorChanged(error: PlaybackException?) {
+            if (error == null) return
             Timber.e(error, "Playback error")
 
             val isDecoderError = error.errorCode == PlaybackException.ERROR_CODE_DECODER_INIT_FAILED ||
-                error.errorCode == PlaybackException.ERROR_CODE_DECODING_FAILED ||
-                error.errorCode == PlaybackException.ERROR_CODE_VIDEO_FRAME_PROCESSING_FAILED
+                error.errorCode == PlaybackException.ERROR_CODE_DECODING_FAILED
 
-            val isNetworkError = error.errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED ||
-                error.errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONTENT_LOAD_FAILED
+            val isNetworkError = error.errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
 
             val playerError = PlaybackError(
                 message = when {

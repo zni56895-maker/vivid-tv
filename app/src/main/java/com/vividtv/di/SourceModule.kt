@@ -1,8 +1,10 @@
 package com.vividtv.di
 
 import com.vividtv.data.source.SourceStrategy
+import com.vividtv.data.source.SampleDataSource
 import com.vividtv.data.source.iptv.IptvSourceStrategy
 import com.vividtv.data.source.overseas.OverseasSourceStrategy
+import com.vividtv.data.source.vod.TvBoxSourceStrategy
 import com.vividtv.data.source.vod.VodSourceStrategy
 import dagger.Module
 import dagger.Provides
@@ -29,4 +31,13 @@ object SourceModule {
     @Singleton
     @IntoSet
     fun provideOverseasSource(strategy: OverseasSourceStrategy): SourceStrategy = strategy
+    @Provides
+    @Singleton
+    @IntoSet
+    fun provideSampleSource(strategy: SampleDataSource): SourceStrategy = strategy
+
+    @Provides
+    @Singleton
+    @IntoSet
+    fun provideTvBoxSource(strategy: TvBoxSourceStrategy): SourceStrategy = strategy
 }
