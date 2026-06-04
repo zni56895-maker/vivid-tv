@@ -13,6 +13,7 @@ set APP_HOME=%DIRNAME%
 for %%i in ("%APP_HOME%") do set APP_HOME=%%~fi
 
 set CLASSPATH=%APP_HOME%\gradle\wrapper\gradle-wrapper.jar
+set DEFAULT_JVM_OPTS=-Xmx64m -Xms64m
 
 @rem Determine Java command
 if not "%JAVA_HOME%"=="" goto findJavaFromJavaHome
