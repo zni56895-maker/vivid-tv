@@ -69,7 +69,7 @@ fun Modifier.dpadFocusBorder(
  * A focus-aware card modifier that provides the complete D-pad focus experience:
  * - Glow shadow on focus
  * - Colored border on focus
- * - No scale transformation (avoids layout shift)
+ * - Scale up on focus (1.0 → 1.06) for TV visibility
  * - Works with Leanback's default focus system
  */
 @Composable
@@ -78,18 +78,21 @@ fun Modifier.dpadFocusCard(
     cornerRadius: Dp = 8.dp,
     focusedBorderWidth: Dp = 4.dp,
 ): Modifier {
-    val borderStroke = if (isFocused) {
-        BorderStroke(focusedBorderWidth, VividColors.FocusBorder)
-    } else {
-        null
-    }
+    val animatedScale by animateFloatAsState(
+        targetValue = if (isFocused) 1.06f else 1f,
+        label = "focusScale",
+    )
 
     return this
+        .graphicsLayer(
+            scaleX = animatedScale,
+            scaleY = animatedScale,
+        )
         .shadow(
-            elevation = if (isFocused) 12.dp else 2.dp,
+            elevation = if (isFocused) 20.dp else 4.dp,
             shape = RoundedCornerShape(cornerRadius),
             ambientColor = VividColors.FocusGlow,
-            spotColor = VividColors.FocusBorder.copy(alpha = 0.3f),
+            spotColor = VividColors.FocusBorder.copy(alpha = 0.4f),
         )
 }
 

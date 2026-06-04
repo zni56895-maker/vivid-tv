@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "WebFetch(domain:cdn.qiaoji8.com)",
+      "WebFetch(domain:tv.xn--yhqu5zs87a.top)",
+      "WebFetch(domain:xhztv.top)",
+      "WebFetch(domain:dxawi.github.io)"
     ]
   }
 }

@@ -1,9 +1,9 @@
 {
-  "comment": "Vivid TV 示例数据源配置 — 替换为实际 API 端点",
+  "comment": "Vivid TV 数据源配置 — 直播源来自 GitHub 公开项目",
 
   "vod_sources": [
     {
-      "name": "默认片源",
+      "name": "示例片源",
       "type": "json",
       "url": "https://api.vividtv.example.com/vod/home",
       "parser": "default",
@@ -38,16 +38,28 @@
 
   "iptv_sources": [
     {
-      "name": "全球综合直播",
-      "m3u8_url": "https://iptg.vividtv.example.com/global.m3u8",
-      "epg_url": "https://epg.vividtv.example.com/guide.xml",
+      "name": "📡 央视 · 卫视综合",
+      "m3u8_url": "https://raw.githubusercontent.com/zilong7728/Collect-IPTV/main/best_sorted.m3u8",
+      "epg_url": "",
+      "update_interval_hours": 6
+    },
+    {
+      "name": "🌐 全球频道（iptv-org）",
+      "m3u8_url": "https://iptv-org.github.io/iptv/index.m3u",
+      "epg_url": "",
       "update_interval_hours": 24
     },
     {
-      "name": "体育赛事直播",
-      "m3u8_url": "https://iptg.vividtv.example.com/sports.m3u8",
-      "epg_url": "https://epg.vividtv.example.com/sports.xml",
-      "update_interval_hours": 6
+      "name": "🇨🇳 Chinese IPTV（纯IPv4）",
+      "m3u8_url": "https://raw.githubusercontent.com/BurningC4/Chinese-IPTV/master/TV-IPV4.m3u",
+      "epg_url": "",
+      "update_interval_hours": 24
+    },
+    {
+      "name": "🔄 聚合源（自动优选）",
+      "m3u8_url": "https://raw.githubusercontent.com/BigBigGrandG/IPTV-URL/release/Gather.m3u",
+      "epg_url": "",
+      "update_interval_hours": 12
     }
   ]
 }

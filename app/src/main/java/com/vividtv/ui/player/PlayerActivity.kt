@@ -1,21 +1,25 @@
 package com.vividtv.ui.player
 
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.ui.PlayerView
 import androidx.compose.material3.Text
 import com.vividtv.domain.player.PlaybackManager
+import com.vividtv.domain.player.PlaybackState
 import com.vividtv.ui.theme.VividColors
 import com.vividtv.ui.theme.VividTvTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,10 +31,11 @@ class PlayerActivity : ComponentActivity() {
     @Inject
     lateinit var playbackManager: PlaybackManager
 
+    private var showControls = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Keep screen on during playback
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         val videoUrl = intent.getStringExtra("video_url") ?: ""
@@ -45,14 +50,49 @@ class PlayerActivity : ComponentActivity() {
                     isLive = isLive,
                     playbackManager = playbackManager,
                     onClose = { finish() },
+                    controlsVisible = showControls,
                 )
             }
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        // Player resources are managed by PlaybackManager
+    // 监听遥控器按键
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        when (keyCode) {
+            KeyEvent.KEYCODE_DPAD_CENTER,
+            KeyEvent.KEYCODE_ENTER,
+            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
+            KeyEvent.KEYCODE_SPACE -> {
+                // OK 键 → 切换控制条显示 / 如果控制条已显示则暂停/播放
+                showControls = !showControls
+                if (showControls) {
+                    // 控制条刚显示，只是切换，不做播放暂停
+                }
+                return true
+            }
+            KeyEvent.KEYCODE_MEDIA_PLAY -> {
+                playbackManager.play()
+                return true
+            }
+            KeyEvent.KEYCODE_MEDIA_PAUSE -> {
+                playbackManager.pause()
+                return true
+            }
+            KeyEvent.KEYCODE_DPAD_LEFT -> {
+                // 左方向键：快退 10 秒
+                val pos = playbackManager.getCurrentPosition()
+                playbackManager.seekTo((pos - 10000).coerceAtLeast(0))
+                return true
+            }
+            KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                // 右方向键：快进 10 秒
+                val pos = playbackManager.getCurrentPosition()
+                val dur = playbackManager.getDuration()
+                playbackManager.seekTo((pos + 10000).coerceAtMost(dur))
+                return true
+            }
+        }
+        return super.onKeyDown(keyCode, event)
     }
 }
 
@@ -63,9 +103,15 @@ fun PlayerScreen(
     isLive: Boolean,
     playbackManager: PlaybackManager,
     onClose: () -> Unit,
+    controlsVisible: Boolean,
 ) {
     val playbackState by playbackManager.playbackState.collectAsState()
     var showControls by remember { mutableStateOf(true) }
+
+    // 同步 Activity 的 controlsVisible 状态
+    LaunchedEffect(controlsVisible) {
+        showControls = controlsVisible
+    }
 
     // Auto-hide controls after 5 seconds
     LaunchedEffect(showControls) {
@@ -86,7 +132,6 @@ fun PlayerScreen(
         }
     }
 
-    // Retrieve the player reference from PlaybackManager
     val exoPlayer = playbackManager.getExoPlayer()
 
     Box(
@@ -94,13 +139,12 @@ fun PlayerScreen(
             .fillMaxSize()
             .background(VividColors.BackgroundDarkest),
     ) {
-        // ExoPlayer View
         if (exoPlayer != null) {
             AndroidView(
                 factory = { context ->
                     PlayerView(context).apply {
                         player = exoPlayer
-                        useController = false // Custom controls
+                        useController = false
                         setBackgroundColor(android.graphics.Color.BLACK)
                     }
                 },
@@ -108,7 +152,7 @@ fun PlayerScreen(
             )
         }
 
-        // Top info bar (shown on remote OK press)
+        // Top info bar
         if (showControls) {
             Column(
                 modifier = Modifier
@@ -130,7 +174,7 @@ fun PlayerScreen(
             }
         }
 
-        // Bottom controls overlay
+        // Bottom controls
         if (showControls) {
             PlayerControlsRow(
                 playbackState = playbackState,
@@ -138,7 +182,6 @@ fun PlayerScreen(
                     if (playbackState.isPlaying) playbackManager.pause()
                     else playbackManager.play()
                 },
-                onRetry = { playbackManager.retry() },
                 onClose = onClose,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -162,9 +205,8 @@ fun PlayerScreen(
 
 @Composable
 private fun PlayerControlsRow(
-    playbackState: com.vividtv.domain.player.PlaybackState,
+    playbackState: PlaybackState,
     onPlayPause: () -> Unit,
-    onRetry: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -177,6 +219,7 @@ private fun PlayerControlsRow(
             text = if (playbackState.isPlaying) "⏸ 暂停" else "▶ 播放",
             color = VividColors.TextPrimary,
             fontSize = 16.sp,
+            modifier = Modifier.focusable(true),
         )
         Text(
             text = formatDuration(playbackState.currentPosition),
