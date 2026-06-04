@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 全暗色调色板 -->
+    <color name="background_darkest">#0D0D0D</color>
+    <color name="background_dark">#1A1A1A</color>
+    <color name="background_medium">#2A2A2A</color>
+    <color name="background_card">#1E1E1E</color>
+    <color name="background_card_focused">#2E2E2E</color>
+
+    <!-- 强调色 -->
+    <color name="accent_red">#E50914</color>
+    <color name="accent_blue">#1A9FFF</color>
+    <color name="accent_blue_dark">#0D6EFD</color>
+
+    <!-- 文字色 -->
+    <color name="text_primary">#E0E0E0</color>
+    <color name="text_secondary">#9E9E9E</color>
+    <color name="text_disabled">#616161</color>
+
+    <!-- 焦点态 -->
+    <color name="focus_border">#1A9FFF</color>
+    <color name="focus_glow">#331A9FFF</color>
+
+    <!-- 分割线/装饰 -->
+    <color name="divider">#333333</color>
+    <color name="divider_accent">#E50914</color>
+
+    <!-- 状态色 -->
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FF9800</color>
+    <color name="error">#F44336</color>
+
+    <!-- 透明 -->
+    <color name="scrim">#99000000</color>
+    <color name="transparent">#00000000</color>
+</resources>

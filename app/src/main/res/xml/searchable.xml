@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- TV Searchable for Leanback -->
+    <searchable xmlns:android="http://schemas.android.com/apk/res/android"
+        android:label="@string/app_name"
+        android:hint="搜索影片…"
+        android:searchSettingsDescription="影片 / 频道 / 直播" />
+</resources>

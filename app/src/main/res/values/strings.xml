@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vivid TV</string>
+
+    <!-- Home -->
+    <string name="home_title">Vivid TV</string>
+    <string name="home_loading">正在加载…</string>
+    <string name="home_error">加载失败，请重试</string>
+    <string name="home_retry">重试</string>
+    <string name="home_empty">暂无内容，点击刷新</string>
+
+    <!-- Player -->
+    <string name="player_error_playback">播放出错，正在重试…</string>
+    <string name="player_error_unsupported">不支持的媒体格式</string>
+    <string name="player_error_network">网络异常，请检查连接</string>
+    <string name="player_quality_auto">自动</string>
+    <string name="player_quality_4k">4K</string>
+    <string name="player_quality_1080p">1080P</string>
+    <string name="player_quality_720p">720P</string>
+    <string name="player_retry">重试播放</string>
+
+    <!-- Detail -->
+    <string name="detail_play">播放</string>
+    <string name="detail_loading">加载详情…</string>
+
+    <!-- IPTV -->
+    <string name="iptv_title">IPTV 直播</string>
+    <string name="iptv_loading">加载频道…</string>
+    <string name="iptv_no_channels">暂无直播频道</string>
+    <string name="iptv_switch_channel">切换到 %1$s</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">首页</string>
+    <string name="nav_iptv">直播</string>
+    <string name="nav_search">搜索</string>
+</resources>
