@@ -5,7 +5,20 @@
       "WebFetch(domain:cdn.qiaoji8.com)",
       "WebFetch(domain:tv.xn--yhqu5zs87a.top)",
       "WebFetch(domain:xhztv.top)",
-      "WebFetch(domain:dxawi.github.io)"
+      "WebFetch(domain:dxawi.github.io)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl -sL \"https://api.github.com/repos/langmanyinghua/netflixtv/contents\")",
+      "Bash(curl -s \"https://api.github.com/repos/langmanyinghua/netflixtv/git/trees/master?recursive=1\")",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/langmanyinghua/netflixtv/master/README.md\")",
+      "Bash(curl -s \"https://api.github.com/repos/langmanyinghua/netflixtv/readme\")",
+      "Bash(curl -sL \"https://api.github.com/repos/langmanyinghua/netflixtv/contents/\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/langmanyinghua/netflixtv/master/api/index.js\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/langmanyinghua/netflixtv/master/manifest.json\")",
+      "Bash(curl -sL \"http://cdn.qiaoji8.com/tvbox.json\")",
+      "Bash(curl -sL --connect-timeout 10 \"https://tvbox.王二小放牛娃.top\")",
+      "Bash(curl -sL --connect-timeout 10 \"https://ghproxy.net/https://raw.githubusercontent.com/yw88075/tvbox/main/yw.json\")",
+      "Bash(curl -sL --connect-timeout 10 \"https://raw.githubusercontent.com/xyq254245/xyqonlinerule/main/XYQTVBox.json\")"
     ]
   }
 }
