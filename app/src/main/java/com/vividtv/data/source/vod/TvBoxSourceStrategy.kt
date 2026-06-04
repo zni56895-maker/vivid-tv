@@ -223,10 +223,27 @@ class TvBoxSourceStrategy @Inject constructor() : SourceStrategy {
     companion object {
         private fun parseFirstPlayUrl(playUrl: String): String {
             if (playUrl.isBlank()) return ""
-            return playUrl.split("#").firstOrNull()
-                ?.split("$")
-                ?.getOrNull(1)
-                ?: ""
+
+            // TVBox 格式：第01集$url#第02集$url 或 来源1$$$来源2
+            // 优先取 m3u8 流
+            val segments = playUrl.split("#", "\$\$\$")
+            for (seg in segments) {
+                val parts = seg.split("\$")
+                val url = parts.getOrNull(1) ?: continue
+                val cleanUrl = url.replace("\\/", "/")
+                if (cleanUrl.contains(".m3u8")) return cleanUrl
+            }
+
+            // 没有 m3u8 就取第一个可用 URL
+            for (seg in segments) {
+                val parts = seg.split("\$")
+                val url = parts.getOrNull(1) ?: continue
+                return url.replace("\\/", "/")
+            }
+
+            // 最后一招：整个字符串当 URL
+            val firstSeg = segments.firstOrNull() ?: return ""
+            return if (firstSeg.startsWith("http")) firstSeg else ""
         }
 
         private fun httpGet(urlStr: String): String {
