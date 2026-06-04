@@ -15,7 +15,7 @@ media3-session = "1.4.1"
 
 # Compose
 compose-bom = "2024.09.00"
-compose-tv = "1.0.0-beta02"
+compose-tv = "1.0.1"
 
 # DI
 hilt = "2.51.1"
