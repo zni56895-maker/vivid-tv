@@ -29,6 +29,17 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Signing via environment variables (for GitHub Actions CI)
+            signingConfig = if (System.getenv("CI") != null) {
+                signingConfigs.create("ci") {
+                    storeFile = file(System.getenv("KEYSTORE_PATH") ?: "../keystore.jks")
+                    storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+                    keyAlias = System.getenv("KEY_ALIAS") ?: ""
+                    keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+                }
+            } else {
+                null // No signing config locally — debug signing is used by default
+            }
         }
         debug {
             isMinifyEnabled = false

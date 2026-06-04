@@ -1,6 +1,7 @@
 package com.vividtv.ui.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -102,6 +103,7 @@ private fun MediaCard(
     Column(
         modifier = modifier
             .width(280.dp)
+            .clickable(onClick = onClick)
             .focusable(true, focusHandle.interactionSource)
             .dpadFocusCard(isFocused = focusHandle.isFocused)
             .clip(RoundedCornerShape(8.dp))
