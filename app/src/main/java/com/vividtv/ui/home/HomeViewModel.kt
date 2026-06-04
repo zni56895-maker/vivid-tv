@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.vividtv.data.model.MediaItem
 import com.vividtv.data.model.MediaRow
 import com.vividtv.data.repository.MediaRepository
+import com.vividtv.data.updater.AppUpdater
 import com.vividtv.ui.player.PlayerActivity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +26,7 @@ data class HomeUiState(
 class HomeViewModel @Inject constructor(
     private val application: Application,
     private val mediaRepository: MediaRepository,
+    private val appUpdater: AppUpdater,
 ) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -32,6 +34,16 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadHome()
+        checkForUpdate()
+    }
+
+    private fun checkForUpdate() {
+        viewModelScope.launch {
+            val update = appUpdater.checkForUpdate()
+            if (update.hasUpdate) {
+                appUpdater.downloadUpdate(update.apkUrl)
+            }
+        }
     }
 
     fun loadHome() {
