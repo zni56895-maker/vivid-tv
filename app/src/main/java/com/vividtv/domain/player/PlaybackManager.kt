@@ -131,6 +131,9 @@ class PlaybackManager @Inject constructor(
             }
     }
 
+    /** Get the internal ExoPlayer instance (may be null before createPlayer) */
+    fun getExoPlayer(): ExoPlayer? = exoPlayer
+
     /** Play a media URL with auto-detection of stream format */
     fun play(
         url: String,

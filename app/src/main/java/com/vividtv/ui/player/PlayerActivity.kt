@@ -86,25 +86,27 @@ fun PlayerScreen(
         }
     }
 
+    // Retrieve the player reference from PlaybackManager
+    val exoPlayer = playbackManager.getExoPlayer()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(VividColors.BackgroundDarkest),
     ) {
         // ExoPlayer View
-        AndroidView(
-            factory = { context ->
-                PlayerView(context).apply {
-                    player = playbackManager.playbackState.let {
-                        // The player is created via PlaybackManager
-                        null // Will be set via LaunchedEffect
+        if (exoPlayer != null) {
+            AndroidView(
+                factory = { context ->
+                    PlayerView(context).apply {
+                        player = exoPlayer
+                        useController = false // Custom controls
+                        setBackgroundColor(android.graphics.Color.BLACK)
                     }
-                    useController = false // Custom controls
-                    setBackgroundColor(android.graphics.Color.BLACK)
-                }
-            },
-            modifier = Modifier.fillMaxSize(),
-        )
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
 
         // Top info bar (shown on remote OK press)
         if (showControls) {
