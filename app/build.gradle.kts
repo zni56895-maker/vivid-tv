@@ -88,7 +88,7 @@ dependencies {
     // Media3 ExoPlayer
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.exoplayer.hls)
-    implementation(libs.media3.exoplayer.rtsp)
+    implementation(libs.media3.exoplayer.dash)
     implementation(libs.media3.ui)
     implementation(libs.media3.session)
 
@@ -115,7 +115,6 @@ dependencies {
 
     // Image Loading
     implementation(libs.coil.compose)
-    implementation(libs.coil.okhttp)
 
     // Logging
     implementation(libs.timber)

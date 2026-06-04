@@ -15,7 +15,7 @@ media3-session = "1.4.1"
 
 # Compose
 compose-bom = "2024.09.00"
-compose-tv = "1.0.0-beta03"
+compose-tv = "1.0.0-beta02"
 
 # DI
 hilt = "2.51.1"
@@ -66,7 +66,7 @@ compose-tv-material = { group = "androidx.tv", name = "tv-material", version.ref
 # Media3 / ExoPlayer
 media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3-exoplayer" }
 media3-exoplayer-hls = { group = "androidx.media3", name = "media3-exoplayer-hls", version.ref = "media3-exoplayer-hls" }
-media3-exoplayer-rtsp = { group = "androidx.media3", name = "media3-exoplayer-dash", version.ref = "media3-exoplayer" }
+media3-exoplayer-dash = { group = "androidx.media3", name = "media3-exoplayer-dash", version.ref = "media3-exoplayer" }
 media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3-ui" }
 media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "media3-session" }
 
@@ -93,7 +93,6 @@ room-compiler = { group = "androidx.room", name = "room-compiler", version.ref =
 
 # Image Loading
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
-coil-okhttp = { group = "io.coil-kt", name = "coil-okhttp", version.ref = "coil" }
 
 # Logging
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
