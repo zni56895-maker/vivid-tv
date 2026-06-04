@@ -1,6 +1,8 @@
 package com.vividtv.ui.home.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -50,6 +53,7 @@ fun TopCategoryBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
             .background(VividColors.BackgroundDark)
             .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -75,6 +79,7 @@ fun TopCategoryBar(
                 color = textColor,
                 fontSize = 16.sp,
                 modifier = Modifier
+                    .clickable { onCategorySelected(cat) }
                     .background(bgColor, RoundedCornerShape(4.dp))
                     .padding(horizontal = 14.dp, vertical = 6.dp)
                     .focusable(true),
@@ -125,6 +130,7 @@ private fun BannerCard(
             .width(600.dp)
             .fillMaxHeight()
             .padding(8.dp)
+            .clickable { onClick() }
             .focusable(true, focusHandle.interactionSource)
             .dpadFocusCard(isFocused = focusHandle.isFocused)
             .clip(RoundedCornerShape(12.dp)),
@@ -214,6 +220,7 @@ fun MediaCard(
     Column(
         modifier = modifier
             .width(320.dp)
+            .clickable { onClick() }
             .focusable(true, focusHandle.interactionSource)
             .dpadFocusCard(isFocused = focusHandle.isFocused)
             .clip(RoundedCornerShape(10.dp))
