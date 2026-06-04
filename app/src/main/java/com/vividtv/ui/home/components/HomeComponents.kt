@@ -193,7 +193,9 @@ fun MediaCardRow(
 
         // Banner 处理
         if (row.title == "__banner__") {
-            BannerCarousel(items = row.items, onItemClick = onItemClick)
+            Box(modifier = Modifier.height(280.dp)) {
+                BannerCarousel(items = row.items, onItemClick = onItemClick)
+            }
         } else {
             // 卡片横向滚动
             LazyRow(
