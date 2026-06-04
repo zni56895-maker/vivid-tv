@@ -8,6 +8,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -78,21 +79,18 @@ fun Modifier.dpadFocusCard(
     cornerRadius: Dp = 8.dp,
     focusedBorderWidth: Dp = 4.dp,
 ): Modifier {
-    val animatedScale by animateFloatAsState(
-        targetValue = if (isFocused) 1.06f else 1f,
-        label = "focusScale",
+    val animatedOffsetX by animateDpAsState(
+        targetValue = if (isFocused) (-4).dp else 0.dp,
+        label = "focusOffset",
     )
 
     return this
-        .graphicsLayer(
-            scaleX = animatedScale,
-            scaleY = animatedScale,
-        )
+        .offset(x = animatedOffsetX, y = animatedOffsetX)
         .shadow(
-            elevation = if (isFocused) 20.dp else 4.dp,
+            elevation = if (isFocused) 24.dp else 4.dp,
             shape = RoundedCornerShape(cornerRadius),
             ambientColor = VividColors.FocusGlow,
-            spotColor = VividColors.FocusBorder.copy(alpha = 0.4f),
+            spotColor = VividColors.FocusBorder.copy(alpha = 0.5f),
         )
 }
 
