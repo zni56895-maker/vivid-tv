@@ -1,18 +1,18 @@
 package com.vividtv.domain.player
 
 import android.content.Context
+import androidx.media3.exoplayer.hls.HlsMediaSource
+import androidx.media3.exoplayer.dash.DashMediaSource
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.DefaultRenderersFactory
+import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
+import androidx.media3.exoplayer.PlaybackException
 import androidx.media3.common.C
-import androidx.media3.common.Format
 import androidx.media3.common.MimeTypes
-import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.DefaultRenderersFactory
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.MediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
-import androidx.media3.exoplayer.source.hls.HlsMediaSource
-import androidx.media3.exoplayer.source.dash.DashMediaSource
 import androidx.media3.exoplayer.trackselection.AdaptiveTrackSelection
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.trackselection.ExoTrackSelection
@@ -90,7 +90,7 @@ class PlaybackManager @Inject constructor(
         val renderersFactory = DefaultRenderersFactory(context)
             .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER)
             // Force MediaCodec (hardware decoder) priority over software fallback
-            .setMediaCodecSelector(DefaultRenderersFactory.DEFAULT_MEDIA_CODEC_SELECTOR)
+            .setMediaCodecSelector(MediaCodecSelector.DEFAULT)
 
         // ── TrackSelector: adaptive bitrate with quality preference ──
         val trackSelectionFactory: ExoTrackSelection.Factory =

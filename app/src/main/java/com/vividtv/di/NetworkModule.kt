@@ -2,12 +2,12 @@ package com.vividtv.di
 
 import com.vividtv.data.remote.OverseasApiService
 import com.vividtv.data.remote.VodApiService
-import com.jakewharton.retrofit2.kotlinx.serialization.converter.asConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
