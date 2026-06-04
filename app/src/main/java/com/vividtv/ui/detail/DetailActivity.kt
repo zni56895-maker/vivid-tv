@@ -14,7 +14,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.tv.material3.Text
+import androidx.compose.material3.Text
 import coil.compose.AsyncImage
 import com.vividtv.data.model.MediaItem
 import com.vividtv.ui.theme.VividColors

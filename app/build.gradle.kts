@@ -81,8 +81,6 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.compose.foundation)
     implementation(libs.compose.runtime)
-    implementation(libs.compose.tv.foundation)
-    implementation(libs.compose.tv.material)
     debugImplementation(libs.compose.ui.tooling)
 
     // Media3 ExoPlayer

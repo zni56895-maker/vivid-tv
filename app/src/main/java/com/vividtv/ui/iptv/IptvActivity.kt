@@ -16,7 +16,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.tv.material3.Text
+import androidx.compose.material3.Text
 import com.vividtv.data.model.IptvChannel
 import com.vividtv.data.source.iptv.IptvSourceStrategy
 import com.vividtv.ui.common.dpadFocusCard

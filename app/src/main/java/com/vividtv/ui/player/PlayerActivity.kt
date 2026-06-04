@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.ui.PlayerView
-import androidx.tv.material3.Text
+import androidx.compose.material3.Text
 import com.vividtv.domain.player.PlaybackManager
 import com.vividtv.ui.theme.VividColors
 import com.vividtv.ui.theme.VividTvTheme

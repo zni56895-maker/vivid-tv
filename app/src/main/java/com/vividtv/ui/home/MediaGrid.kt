@@ -17,7 +17,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.tv.material3.Text as TvText
+import androidx.compose.material3.Text
 import coil.compose.AsyncImage
 import com.vividtv.data.model.MediaItem
 import com.vividtv.data.model.MediaRow
@@ -63,7 +63,7 @@ private fun MediaRowSection(
 ) {
     Column {
         // Row title
-        TvText(
+                Text(
             text = row.title,
             color = VividColors.TextPrimary,
             fontSize = 22.sp,
@@ -122,7 +122,7 @@ private fun MediaCard(
         )
 
         // Title
-        TvText(
+        Text(
             text = item.title,
             color = VividColors.TextPrimary,
             fontSize = 14.sp,
@@ -133,7 +133,7 @@ private fun MediaCard(
 
         // Year & rating
         if (item.year > 0) {
-            TvText(
+            Text(
                 text = "${item.year} · ⭐ ${item.rating}",
                 color = VividColors.TextSecondary,
                 fontSize = 12.sp,

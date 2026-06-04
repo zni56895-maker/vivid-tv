@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.text.BasicText
-import androidx.tv.material3.Text as TvText
+import androidx.compose.material3.Text
 import com.vividtv.ui.theme.VividColors
 
 @Composable
@@ -19,7 +19,7 @@ fun TopNavBar(modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // App Logo / Title
-        TvText(
+        Text(
             text = "Vivid TV",
             color = VividColors.AccentRed,
             fontSize = 28.sp,
@@ -40,7 +40,7 @@ fun TopNavBar(modifier: Modifier = Modifier) {
 @Composable
 private fun NavItem(label: String, isSelected: Boolean = false) {
     val color = if (isSelected) VividColors.AccentBlue else VividColors.TextSecondary
-    TvText(
+    Text(
         text = label,
         color = color,
         fontSize = 18.sp,
@@ -53,7 +53,7 @@ fun LoadingState() {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        TvText(
+        Text(
             text = "正在加载…",
             color = VividColors.TextSecondary,
             fontSize = 18.sp,
@@ -73,13 +73,13 @@ fun ErrorState(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        TvText(
+        Text(
             text = message,
             color = VividColors.Error,
             fontSize = 18.sp,
         )
         Spacer(modifier = Modifier.height(16.dp))
-        TvText(
+        Text(
             text = "按 OK 重试",
             color = VividColors.AccentBlue,
             fontSize = 16.sp,
@@ -94,13 +94,13 @@ fun EmptyState() {
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            TvText(
+            Text(
                 text = "暂无内容",
                 color = VividColors.TextSecondary,
                 fontSize = 20.sp,
             )
             Spacer(modifier = Modifier.height(8.dp))
-            TvText(
+            Text(
                 text = "按 OK 刷新",
                 color = VividColors.TextDisabled,
                 fontSize = 14.sp,
