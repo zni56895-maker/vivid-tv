@@ -84,11 +84,11 @@ dependencies {
     implementation(libs.compose.runtime)
     debugImplementation(libs.compose.ui.tooling)
 
-    // Media3 ExoPlayer
-    implementation(libs.media3.exoplayer)
-    implementation(libs.media3.exoplayer.hls)
-    implementation(libs.media3.exoplayer.dash)
-    implementation(libs.media3.ui)
+    // Media3 ExoPlayer (hardcoded versions — version catalog was unreliable)
+    implementation("androidx.media3:media3-exoplayer:1.2.0")
+    implementation("androidx.media3:media3-exoplayer-hls:1.2.0")
+    implementation("androidx.media3:media3-exoplayer-dash:1.2.0")
+    implementation("androidx.media3:media3-ui:1.2.0")
     implementation(libs.media3.session)
 
     // Hilt DI
@@ -100,8 +100,8 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.kotlinx.serialization.converter)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.core)
